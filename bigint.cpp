@@ -56,13 +56,15 @@ BigInt::BigInt(const string &s, int setbase)
     }
     /************* You complete *************/
     base = setbase;
-    int digit;
-    for(int i = s.length() - 1; i >= 0; i--)
+    int digit, size = s.length() - 1, minSign = 0;
+    if(s[0] == '-')
     {
-        if(s[i] == '-')
-        {
-            isPositive = false;
-        }
+        isPositive = false;
+        // dont want to push the minus sign into the vector
+        minSign = 1;
+    }
+    for(int i = size; i >= minSign; i--)
+    {
         if(isalpha(s[i]) > 0)
         {
             digit = (int) (s[i] - 65) + 10;
@@ -95,6 +97,11 @@ BigInt::BigInt(int input,int setbase)
     }
     /************* You complete *************/
     base = setbase;
+    if(input < 0)
+    {
+        isPositive = false;
+        input *= -1;
+    }
 
     int temp = input;
     while(input != 0)
@@ -115,7 +122,14 @@ BigInt::BigInt(int input,int setbase)
 BigInt::BigInt(const BigInt &b)
 {
     /************* You complete *************/
+    base = b.base;
+    isPositive = b.isPositive;
 
+    int size = b.vec.size();
+    for(int i = 0; i < size; i++)
+    {
+        vec.push_back(b.vec[i]);
+    }
 }
 
 /*
@@ -126,12 +140,21 @@ BigInt::BigInt(const BigInt &b)
 //       - base
 */
 BigInt & BigInt::operator = (const BigInt &b){
-
     /************* You complete *************/
-
-
-
-
+    // incase of self assignment
+    if(this == &b)
+    {
+        return *this;
+    }
+    base = b.base;
+    isPositive = b.isPositive;
+    // clear existing data
+    vec.clear();
+    int size = b.vec.size();
+    for(int i = 0; i < size; i++)
+    {
+        vec.push_back(b.vec[i]);
+    }
     return *this; 
 }
 
