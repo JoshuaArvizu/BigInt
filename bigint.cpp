@@ -247,78 +247,118 @@ int BigInt::compare(const BigInt &b) const{
     //    - other cases?
     
     //If ALL digits are the same, then they MUST be equal!!
+    if(!b.isPositive && this->isPositive)
+    {
+        return 1;
+    }
+    else if(b.isPositive && !this->isPositive)
+    {
+        return -1;
+    }
+    // when we get here we know the two numbers have the same sign (either both pos or negative)
+    if(b.vec.size() > this->vec.size())
+    {
+        if(!b.isPositive && !this->isPositive)
+        {
+            return 1;
+        }
+        return -1;
+    }
+    else if(b.vec.size() < this->vec.size())
+    {
+        if(!b.isPositive && !this->isPositive)
+        {
+            return -1;
+        }
+        return 1;
+    }
+    else
+    {
+        int size = b.vec.size() - 1;
+        // since we put the integers in reverse order we have to start with the nth-1 index of the array
+        for(int i = size; i >= 0; i--)
+        {
+            if(b.vec[i] > this->vec[i])
+            {
+                // if num is negative smaller is greater
+                if(!this->isPositive)
+                {
+                    return 1;
+                }
+                return -1;
+            }
+            else if(b.vec[i] < this->vec[i])
+            {
+                if(!this->isPositive)
+                {
+                    return -1;
+                }
+                return 1;
+            }
+        }
+    }
     return 0;
 }
 
 
 //Call the compare function above to check if a == b
 bool operator == (const BigInt &a, const BigInt &b){
-  
-    /************* You complete *************/
-
-  
-  
-  return false;//for now
+    /************ You complete ************/
+    if(a.compare(b) == 0)
+    {
+        return true;
+    }
+    return false;
 }
 
 //Call the compare function above to check if a != b
 bool operator != (const BigInt &a, const BigInt &b){
-  
-    /************* You complete *************/
-
-  
-  
-  
-  
-  return false;//for now
+    /************* You complete ************/
+    if(a.compare(b) != 0)
+    {
+        return true;
+    }
+    return false;
 }
 
 //Call the compare function above to check if a <= b
 bool operator <= (const BigInt &a, const BigInt &b){
-  
     /************* You complete *************/
-
-  
-  
-  
-  
-  return false;//for now
+    if(a.compare(b) == 0 || a.compare(b) == -1)
+    {
+        return true;
+    }
+    return false;
 }
 
 //Call the compare function above to check if a >= b
 bool operator >= (const BigInt &a, const BigInt &b){
-  
     /************* You complete *************/
-
-  
-  
-  
-  
-  return false;//for now
+    if(a.compare(b) == 1 || a.compare(b) == 0)
+    {
+        return true;
+    }
+    return false;
 }
 
 //Call the compare function above to check if a > b
 bool operator > (const BigInt &a, const BigInt &b){
-  
     /************* You complete *************/
-
-  
-  
-  
-  
-  return false;//for now
+    if(a.compare(b) == 1)
+    {
+        return true;
+    }
+    return false;
 }
 
 //Call the compare function above to check if a < b
 bool operator < (const BigInt &a, const BigInt &b){
-  
     /************* You complete *************/
-
-  
-  
-  
-  
-  return false;//for now
+    if(a.compare(b) == -1)
+    {
+        return true;
+    }
+    return false;
 }
 
 //******************************************************************
