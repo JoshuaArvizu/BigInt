@@ -451,9 +451,15 @@ const BigInt & BigInt::operator += (const BigInt &b){
         throw DiffBaseException();
     }
     /************* You complete *************/
+    /*if(isPositive && !b.isPositive || !isPositive && b.isPositive)
+    {
+        *this -= b;
+        return *this;
+    }*/
     int carry = 0, remainder, index = max(vec.size(), b.vec.size()), valA = 0, valB = 0;
     for(int i = 0; i < index; i++)
     {
+        // make sure the memory we access is valid
         if(i < b.vec.size())
         {
             valB = b.vec[i];
@@ -470,6 +476,7 @@ const BigInt & BigInt::operator += (const BigInt &b){
         {
             valA = 0;
         }
+        // addition algo
         if(valA + carry > valA)
         {
             valA += carry;
@@ -567,36 +574,50 @@ const BigInt & BigInt::operator -= (const BigInt &b){
     else if(*this < b && !isPositive && b.isPositive)
     {
         // addition as well but end result is negative
-        mode = 6;
+        mode = 5;
     }
 
+    int valA = 0, valB = 0;
     for(int i = 0; i < size; i++)
     {
+        if(i < b.vec.size())
+        {
+            valB = b.vec[i];
+        }
+        else
+        {
+            valB = 0;
+        }
+        if(i < vec.size())
+        {
+               valA = vec[i];
+        }
+        else
+        {
+            valA = 0;
+        }
         // make sure the memory we access exist
         if(i < vec.size())
         {
             switch(mode)
             {
                 case 1:
-                    dif = b.vec[i] - vec[i];
+                    dif = valB - valA;
                     break;
                 case 2:
-                    dif = vec[i] - b.vec[i];
+                    dif = valA - valB;
                     break;
                 case 3:
-                    dif = b.vec[i] - vec[i];
+                    dif = valB - valA;
                     break;
                 case 4:
-                    dif = vec[i] - b.vec[i];
+                    dif = valA - valB;
                     break;
                 case 5:
                     *this += b;
                     return *this;
-                case 6:
-                    *this += b;
-                    return *this;
                 default:
-                    dif = vec[i] - b.vec[i];
+                    dif = valA - valB;
             }
         }
         else
