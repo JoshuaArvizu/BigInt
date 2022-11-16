@@ -102,14 +102,19 @@ BigInt::BigInt(int input,int setbase)
         isPositive = false;
         input *= -1;
     }
-
+    if(input == 0)
+    {
+        vec.push_back(input);
+    }
     int temp = input;
+    // convert num to any base
     while(input != 0)
     {
         input /= base;
         vec.push_back(temp%base);
         temp = input;
     }
+
 }
 
 /*
@@ -174,15 +179,50 @@ BigInt & BigInt::operator = (const BigInt &b){
 //  Note: char 'A' = int 65
 */
 string BigInt::to_string(){
-
     /************* You complete *************/
-
-  
-  
-  
-  
-
-  return "";//for now
+    string number = "";
+    char digit;
+    int size = vec.size();
+    bool leadingZero = false;
+    if(vec[size - 1] == 0)
+    {
+        leadingZero = true;
+    }
+    if(!isPositive && !leadingZero)
+    {
+        number += "-";
+    }
+    for(int i = size - 1; i >= 0; i--)
+    {
+        if(vec[i] >= 10)
+        {
+            digit = (char) ((vec[i] + 65) - 10);
+        }
+        else
+        {
+            digit = (char) (vec[i]+48);
+        }
+        // answer should not have leading zeros
+        if(leadingZero && digit == '0')
+        {
+            continue;
+        }
+        else
+        {
+            // adds negative if needed and only adds it once
+            if(!isPositive && leadingZero)
+            {
+                number += "-";
+            }
+            leadingZero = false;
+            number += digit;
+        }
+    }
+    if(leadingZero)
+    {
+        return "0";
+    }
+    return number;
 }
 
 /*
@@ -195,16 +235,30 @@ string BigInt::to_string(){
 //           therefore, INT_MIN does not equal to (-INT_MAX)
 */
 int BigInt::to_int() const{
-
     /************* You complete *************/
+    int bigInt = 0, size = vec.size();
+    // it not long long will never get INT_MAX to compare properly
+    long long result = 0;
 
-
-  
-  
-  
-  
- 
-  return 0;//for now
+    for(int i = 0; i < size; i++)
+    {
+        result = (vec[i] * pow(base, i));
+        result += bigInt;
+        if(result >= INT_MAX && isPositive)
+        {
+            return INT_MAX;
+        }
+        if(result <= INT_MIN && !isPositive)
+        {
+            return INT_MIN;
+        }
+        bigInt += (vec[i] * pow(base, i));
+    }
+    if(!isPositive)
+    {
+        bigInt *= -1;
+    }
+    return bigInt;
 }
 
 //******************************************************************
@@ -379,13 +433,10 @@ bool operator < (const BigInt &a, const BigInt &b){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt operator + (const  BigInt &a, const BigInt & b){
-
-  /************* You complete *************/
-  
-  
-
-
-  return a;//for now
+    /************* You complete *************/
+    BigInt temp = a;
+    temp += b;
+    return temp;//for now
 }
 
 /*
@@ -400,10 +451,55 @@ const BigInt & BigInt::operator += (const BigInt &b){
         throw DiffBaseException();
     }
     /************* You complete *************/
+    int carry = 0, remainder, index = max(vec.size(), b.vec.size()), valA = 0, valB = 0;
+    for(int i = 0; i < index; i++)
+    {
+        if(i < b.vec.size())
+        {
+            valB = b.vec[i];
+        }
+        else
+        {
+            valB = 0;
+        }
+        if(i < vec.size())
+        {
+               valA = vec[i];
+        }
+        else
+        {
+            valA = 0;
+        }
+        if(valA + carry > valA)
+        {
+            valA += carry;
+            carry = 0;
+        }
+        if(valA + valB >= base)
+        {
+            carry = valA + valB + carry;
+            remainder = carry % base;
+            carry /= base;
+            vec[i] = remainder;
+        }
+        else
+        {
+            if(i < vec.size())
+            {
+                vec[i] = valA + valB;
+            }
+            else
+            {
+                vec.push_back(valA+valB);
+            }
+        }
+    }
+    if(carry != 0)
+    {
+        vec.push_back(carry);
+    }
 
-    
-
-  return *this;
+    return *this;
 }
 
 /*
@@ -416,13 +512,10 @@ const BigInt & BigInt::operator += (const BigInt &b){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt operator - (const  BigInt &a, const BigInt & b){
-
-  /************* You complete *************/
-  
-  
-  
-
-  return a;//for now
+    /************* You complete *************/
+    BigInt temp = a;
+    temp -= b;
+    return temp;
 }
 
 
@@ -439,12 +532,99 @@ const BigInt & BigInt::operator -= (const BigInt &b){
         throw DiffBaseException();
     }
     /************* You complete *************/
+    int dif = 0, size = max(b.vec.size(), vec.size()), mode = 0;
+    bool borrowed = false;
+    // in this case if "a" has less digits then "b" we have to use push_back
+    // because we have to return a and the vec in a has to be able to contain all the digits of the subtraction
+    for(int i = vec.size(); i < size; i++)
+    {
+        vec.push_back(0);
+    }
 
+    if(*this < b && isPositive && b.isPositive)
+    {
+        isPositive = false;
+        mode = 1;
+    }
+    else if(*this > b && isPositive && b.isPositive)
+    {
+        mode = 2;
+    }
+    else if(*this > b && !isPositive && !b.isPositive)
+    {
+        isPositive = true;
+        mode = 3;
+    }
+    else if(*this < b && !isPositive && !b.isPositive)
+    {
+        mode = 4;
+    }
+    else if(*this > b && isPositive && !b.isPositive)
+    {
+        // this mode would become addition
+        mode = 5;
+    }
+    else if(*this < b && !isPositive && b.isPositive)
+    {
+        // addition as well but end result is negative
+        mode = 6;
+    }
 
-    
-    
-    
-  return *this;
+    for(int i = 0; i < size; i++)
+    {
+        // make sure the memory we access exist
+        if(i < vec.size())
+        {
+            switch(mode)
+            {
+                case 1:
+                    dif = b.vec[i] - vec[i];
+                    break;
+                case 2:
+                    dif = vec[i] - b.vec[i];
+                    break;
+                case 3:
+                    dif = b.vec[i] - vec[i];
+                    break;
+                case 4:
+                    dif = vec[i] - b.vec[i];
+                    break;
+                case 5:
+                    *this += b;
+                    return *this;
+                case 6:
+                    *this += b;
+                    return *this;
+                default:
+                    dif = vec[i] - b.vec[i];
+            }
+        }
+        else
+        {
+            if(*this < b && isPositive && b.isPositive)
+            {
+                dif = b.vec[i];
+            }
+            else if(*this > b && isPositive && b.isPositive)
+            {
+                dif = vec[i];
+            }
+        }
+        // when borrow occurs subtract 1 from that column
+        if(borrowed)
+        {
+            borrowed = false;
+            dif--;
+        }
+        // less than 0 means subtraction requires a borrow
+        if(dif < 0)
+        {
+            dif += base;
+            borrowed = true;
+        }
+        vec[i] = dif;
+    }
+    return *this;
 }
 
 /*

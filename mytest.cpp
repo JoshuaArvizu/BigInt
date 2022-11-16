@@ -9,7 +9,7 @@ int main() {
     //You may comment out the example code snippets below
   
     //First example
-    BigInt mytest("DADCAFE", 16);
+   /* BigInt mytest("DADCAFE", 16);
     cout<<mytest.to_string()<<endl;//should print DADCAFE
     BigInt mytest2("1010",2);
     cout<<mytest2.to_string()<<endl;//should print 1010
@@ -23,16 +23,25 @@ int main() {
     first += second;
     cout<<boolalpha<<(first >= second)<<endl;//should print true
     cout<<sum.to_string()<<endl;//should print DAE89ED
-    cout<<first.to_string()<<endl;//should print DAE89ED
+    cout<<first.to_string()<<endl;//should print DAE89ED*/
     
     //Third example
-    BigInt var1(496,10);
+   /* BigInt var1(496,10);
     BigInt var2(249,10);
     BigInt var3(1189,10);
     BigInt var4 = modPow(var1,var2,var3);
     cout<<var4.to_int()<<endl;//should print 72
     cout<<(char)var4.to_int()<<endl;//should print "H"
-    
-    
-	return 0;
+    */
+
+   BigInt var1("87", 10);
+   BigInt var2("87", 10);
+   var1 = var1 - var2;
+   cout << var1.to_string() << endl;
+
+   /*BigInt var3("444", 10);
+   BigInt var4("666", 10);
+   var3 = var3 + var4;*/
+   //cout << var3.to_string() << endl;
+   return 0;
 }
