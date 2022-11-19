@@ -451,11 +451,31 @@ const BigInt & BigInt::operator += (const BigInt &b){
         throw DiffBaseException();
     }
     /************* You complete *************/
-    /*if(isPositive && !b.isPositive || !isPositive && b.isPositive)
+    if(isPositive && !b.isPositive)
     {
+        BigInt temp = b;
+        temp.isPositive = true;
+        return *this -= temp;
+    }
+    if(!isPositive && b.isPositive)
+    {
+        bool signChange = false;
+        isPositive = true;
+        if(*this < b)
+        {
+            signChange = true;
+        }
         *this -= b;
+        if(signChange)
+        {
+            isPositive = true;
+        }
+        else
+        {
+            isPositive = false;
+        }
         return *this;
-    }*/
+    }
     int carry = 0, remainder, index = max(vec.size(), b.vec.size()), valA = 0, valB = 0;
     for(int i = 0; i < index; i++)
     {
@@ -487,7 +507,14 @@ const BigInt & BigInt::operator += (const BigInt &b){
             carry = valA + valB + carry;
             remainder = carry % base;
             carry /= base;
-            vec[i] = remainder;
+            if(i < vec.size())
+            {
+                vec[i] = remainder;
+            }
+            else
+            {
+                vec.push_back(remainder);
+            }
         }
         else
         {
@@ -540,43 +567,50 @@ const BigInt & BigInt::operator -= (const BigInt &b){
     }
     /************* You complete *************/
     int dif = 0, size = max(b.vec.size(), vec.size()), mode = 0;
-    bool borrowed = false;
+    bool borrowed = false, aLessThanB = false;
     // in this case if "a" has less digits then "b" we have to use push_back
     // because we have to return a and the vec in a has to be able to contain all the digits of the subtraction
     for(int i = vec.size(); i < size; i++)
     {
         vec.push_back(0);
     }
-
-    if(*this < b && isPositive && b.isPositive)
+    // must rewrite this if block in such a way where we have just the object
+    // comparison and then if statments with just the isPositive
+    // needs to strcutured to where correct mode is given
+    // or might need to do nested ifs
+    if(*this < b)
     {
-        isPositive = false;
-        mode = 1;
+        if(!isPositive && !b.isPositive)
+        {
+            mode = 2;
+        }
+        else if(!isPositive && b.isPositive)
+        {
+            aLessThanB = true;
+            mode = 3;
+        }
+        else
+        {
+            isPositive = false;
+            mode = 1;
+        }
     }
-    else if(*this > b && isPositive && b.isPositive)
+    else if(*this > b)
     {
-        mode = 2;
+        if(isPositive && b.isPositive)
+        {
+            mode = 2;
+        }
+        else if(!isPositive && !b.isPositive)
+        {
+            isPositive = true;
+            mode = 1;
+        }
+        else if(isPositive && !b.isPositive)
+        {
+            mode = 3;
+        }
     }
-    else if(*this > b && !isPositive && !b.isPositive)
-    {
-        isPositive = true;
-        mode = 3;
-    }
-    else if(*this < b && !isPositive && !b.isPositive)
-    {
-        mode = 4;
-    }
-    else if(*this > b && isPositive && !b.isPositive)
-    {
-        // this mode would become addition
-        mode = 5;
-    }
-    else if(*this < b && !isPositive && b.isPositive)
-    {
-        // addition as well but end result is negative
-        mode = 5;
-    }
-
     int valA = 0, valB = 0;
     for(int i = 0; i < size; i++)
     {
@@ -608,13 +642,18 @@ const BigInt & BigInt::operator -= (const BigInt &b){
                     dif = valA - valB;
                     break;
                 case 3:
-                    dif = valB - valA;
-                    break;
-                case 4:
-                    dif = valA - valB;
-                    break;
-                case 5:
-                    *this += b;
+                    if(aLessThanB)
+                    {
+                        isPositive = true;
+                        *this += b;
+                        isPositive = false;
+                    }
+                    else
+                    {
+                        BigInt temp = b;
+                        temp.isPositive = true;
+                        *this += temp;
+                    }
                     return *this;
                 default:
                     dif = valA - valB;
