@@ -480,7 +480,7 @@ const BigInt & BigInt::operator += (const BigInt &b){
     for(int i = 0; i < index; i++)
     {
         // make sure the memory we access is valid
-        if(i < b.vec.size())
+        if(i < (int) b.vec.size())
         {
             valB = b.vec[i];
         }
@@ -488,7 +488,7 @@ const BigInt & BigInt::operator += (const BigInt &b){
         {
             valB = 0;
         }
-        if(i < vec.size())
+        if(i < (int) vec.size())
         {
                valA = vec[i];
         }
@@ -507,7 +507,7 @@ const BigInt & BigInt::operator += (const BigInt &b){
             carry = valA + valB + carry;
             remainder = carry % base;
             carry /= base;
-            if(i < vec.size())
+            if(i < (int) vec.size())
             {
                 vec[i] = remainder;
             }
@@ -518,7 +518,7 @@ const BigInt & BigInt::operator += (const BigInt &b){
         }
         else
         {
-            if(i < vec.size())
+            if(i < (int) vec.size())
             {
                 vec[i] = valA + valB;
             }
@@ -551,8 +551,6 @@ BigInt operator - (const  BigInt &a, const BigInt & b){
     temp -= b;
     return temp;
 }
-
-
 /*
 //==================
 // MEMBER function
@@ -574,10 +572,6 @@ const BigInt & BigInt::operator -= (const BigInt &b){
     {
         vec.push_back(0);
     }
-    // must rewrite this if block in such a way where we have just the object
-    // comparison and then if statments with just the isPositive
-    // needs to strcutured to where correct mode is given
-    // or might need to do nested ifs
     if(*this < b)
     {
         if(!isPositive && !b.isPositive)
@@ -614,7 +608,7 @@ const BigInt & BigInt::operator -= (const BigInt &b){
     int valA = 0, valB = 0;
     for(int i = 0; i < size; i++)
     {
-        if(i < b.vec.size())
+        if(i < (int) b.vec.size())
         {
             valB = b.vec[i];
         }
@@ -622,7 +616,7 @@ const BigInt & BigInt::operator -= (const BigInt &b){
         {
             valB = 0;
         }
-        if(i < vec.size())
+        if(i < (int) vec.size())
         {
                valA = vec[i];
         }
@@ -631,7 +625,7 @@ const BigInt & BigInt::operator -= (const BigInt &b){
             valA = 0;
         }
         // make sure the memory we access exist
-        if(i < vec.size())
+        if(i < (int) vec.size())
         {
             switch(mode)
             {
@@ -697,16 +691,11 @@ const BigInt & BigInt::operator -= (const BigInt &b){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt operator * (const  BigInt &a, const BigInt & b){
-
     /************* You complete *************/
-
-    
-    
-
-  return a;//for now
+    BigInt temp = a;
+    temp *= b;
+    return temp;
 }
-
-
 
 /*
 //==================
@@ -722,12 +711,44 @@ const BigInt & BigInt::operator *= (const BigInt &b){
         throw DiffBaseException();
     }
     /************* You complete *************/
+    BigInt total(base);
+    int carry = 0, remainder = 0;
+    total.vec.push_back(0);
 
-
-    
-
-  
-    return *this;
+    for(int i = 0; i < (int) b.vec.size(); i++)
+    {
+        BigInt temp(base);
+        for(int k = 0; k < i; k++)
+        {
+            temp.vec.push_back(0);
+        }
+        for(int j = 0; j < (int) vec.size(); j++)
+        {
+            if(vec[j] * b.vec[i] >= base)
+            {
+                carry = vec[j] * b.vec[i] + carry;
+                remainder = carry % base;
+                carry /= base;
+                temp.vec.push_back(remainder);
+            }
+            else
+            {
+                temp.vec.push_back(vec[j] * b.vec[i] + carry);
+                carry = 0;
+            }
+        }
+        if(carry != 0)
+        {
+            temp.vec.push_back(carry);
+        }
+        carry = 0;
+        total += temp;
+    }
+    if((!isPositive && b.isPositive) || (isPositive && !b.isPositive))
+    {
+        total.isPositive = false;
+    }
+    return *this = total;
 }
 
 /*
@@ -740,14 +761,10 @@ const BigInt & BigInt::operator *= (const BigInt &b){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt operator / (const  BigInt &a, const BigInt & b){
-
     /************* You complete *************/
-  
-
-    
-
-
-    return a;//for now
+    BigInt temp = a;
+    temp /= b;
+    return temp;
 }
 
 
@@ -767,12 +784,6 @@ const BigInt & BigInt::operator /= (const BigInt &b){
     }
     /************* You complete *************/
 
-
-
-    
-  
-  
-  
     return *this;
 }
 
@@ -786,16 +797,9 @@ const BigInt & BigInt::operator /= (const BigInt &b){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt operator % (const  BigInt &a, const BigInt & b){
-
     /************* You complete *************/
-  
-  
-
-    
-    
     return a;//for now
 }
-
 
 /*
 //==================
