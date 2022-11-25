@@ -301,26 +301,64 @@ int BigInt::compare(const BigInt &b) const{
     //    - other cases?
     
     //If ALL digits are the same, then they MUST be equal!!
-    if(!b.isPositive && this->isPositive)
+
+    // if vector is made up of all zeros then it should be treated as zero
+    // during some math operations may get leading zeros or vector with size > 1 but made up of zeros
+    /*if(vec[vec.size()-1] == 0)
+    {
+        int size = vec.size() -1;
+        bool allZeros = true;
+        for(int i = size; i >= 0; i++)
+        {
+            if(vec[i] != 0)
+            {
+                allZeros = false;
+                break;
+            }
+        }
+        if(allZeros)
+        {
+            return -1;
+        }
+    }
+    if(b.vec[b.vec.size()-1] == 0)
+    {
+        int size = b.vec.size() - 1;
+        bool allZeros = true;
+        for(int i = size; i >= 0; i++)
+        {
+            if(b.vec[i] != 0)
+            {
+                allZeros = false;
+                break;
+            }
+        }
+        if(allZeros)
+        {
+            return 1;
+        }
+    }*/
+
+    if(!b.isPositive && isPositive)
     {
         return 1;
     }
-    else if(b.isPositive && !this->isPositive)
+    else if(b.isPositive && !isPositive)
     {
         return -1;
     }
-    // when we get here we know the two numbers have the same sign (either both pos or negative)
-    if(b.vec.size() > this->vec.size())
+
+    if(b.vec.size() > vec.size())
     {
-        if(!b.isPositive && !this->isPositive)
+        if(!b.isPositive && !isPositive)
         {
             return 1;
         }
         return -1;
     }
-    else if(b.vec.size() < this->vec.size())
+    else if(b.vec.size() < vec.size())
     {
-        if(!b.isPositive && !this->isPositive)
+        if(!b.isPositive && !isPositive)
         {
             return -1;
         }
@@ -332,18 +370,18 @@ int BigInt::compare(const BigInt &b) const{
         // since we put the integers in reverse order we have to start with the nth-1 index of the array
         for(int i = size; i >= 0; i--)
         {
-            if(b.vec[i] > this->vec[i])
+            if(b.vec[i] > vec[i])
             {
                 // if num is negative smaller is greater
-                if(!this->isPositive)
+                if(!isPositive)
                 {
                     return 1;
                 }
                 return -1;
             }
-            else if(b.vec[i] < this->vec[i])
+            else if(b.vec[i] < vec[i])
             {
-                if(!this->isPositive)
+                if(!isPositive)
                 {
                     return -1;
                 }
@@ -678,6 +716,20 @@ const BigInt & BigInt::operator -= (const BigInt &b){
         }
         vec[i] = dif;
     }
+    if(vec[vec.size()-1] == 0)
+    {
+        for(unsigned int i = vec.size()-1; i > 0; i--)
+        {
+            if(vec[i] == 0)
+            {
+                vec.erase(vec.begin() + (vec.size()-1));
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
     return *this;
 }
 
@@ -783,7 +835,9 @@ const BigInt & BigInt::operator /= (const BigInt &b){
         throw DivByZeroException();
     }
     /************* You complete *************/
-
+    BigInt quotient, remainder;
+    divisionMain(b, quotient, remainder);
+    *this = quotient;
     return *this;
 }
 
@@ -798,6 +852,7 @@ const BigInt & BigInt::operator /= (const BigInt &b){
 */
 BigInt operator % (const  BigInt &a, const BigInt & b){
     /************* You complete *************/
+
     return a;//for now
 }
 
@@ -834,14 +889,82 @@ const BigInt & BigInt::operator %= (const BigInt &b){
 //        2. What are the base cases?? (e.g., div by itself)
 */
 void BigInt::divisionMain(const BigInt &b, BigInt &quotient, BigInt &remainder){
-
     /************* You complete *************/
+    BigInt divisor = b, dividend = *this, zero(0, base), one(1, base);
+    divisor.isPositive = true;
+    dividend.isPositive = true;
 
+    if(*this == zero)
+    {
+        quotient.vec.push_back(0);
+        remainder.vec.push_back(0);
+    }
+    else if(*this == b)
+    {
+        quotient.vec.push_back(1);
+        remainder.vec.push_back(0);
+    }
+    else if(b == one)
+    {
+        quotient = dividend;
+        remainder.vec.push_back(0);
+    }
+    else
+    {
+        // pos starts counting from rightmost
+        // div_seq starts from leftmost
+        int position = dividend.vec.size() - 1;
+        // seq = sequence
+        BigInt dividend_seq(base);
+        dividend_seq.vec.push_back(dividend.vec[position]);
 
-
-  
-  
-
+        while(position < dividend.vec.size())
+        {
+            while(dividend_seq < divisor && position >= 0)
+            {
+                if(position != dividend.vec.size() - 1)
+                {
+                    quotient.vec.insert(quotient.vec.begin() + 0, 0);
+                }
+                position--;
+                if(position < 0)
+                {
+                    break;
+                }
+                dividend_seq.vec.insert(dividend_seq.vec.begin() + 0, dividend.vec[position]);
+            }
+            if(position < 0)
+            {
+                break;
+            }
+            int times = 0;
+            while(dividend_seq >= divisor)
+            {
+                dividend_seq -= divisor;
+                times++;
+            }
+            quotient.vec.insert(quotient.vec.begin() + 0, times);
+            if(dividend_seq == zero)
+            {
+                dividend_seq.vec.clear();
+            }
+            if(position < dividend.vec.size())
+            {
+                dividend_seq.vec.insert(dividend_seq.vec.begin() + 0, dividend.vec[position-1]);
+            }
+            position--;
+        }
+        remainder = dividend_seq;
+        remainder.isPositive = dividend.isPositive;
+    }
+    if((remainder != zero) && (remainder.vec.size() > 0))
+    {
+        quotient.vec.push_back(0);
+    }
+    if((!isPositive && b.isPositive) || (isPositive && !b.isPositive))
+    {
+        quotient.isPositive = false;
+    }
 }
 
 
