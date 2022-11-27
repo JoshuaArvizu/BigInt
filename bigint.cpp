@@ -302,43 +302,6 @@ int BigInt::compare(const BigInt &b) const{
     
     //If ALL digits are the same, then they MUST be equal!!
 
-    // if vector is made up of all zeros then it should be treated as zero
-    // during some math operations may get leading zeros or vector with size > 1 but made up of zeros
-    /*if(vec[vec.size()-1] == 0)
-    {
-        int size = vec.size() -1;
-        bool allZeros = true;
-        for(int i = size; i >= 0; i++)
-        {
-            if(vec[i] != 0)
-            {
-                allZeros = false;
-                break;
-            }
-        }
-        if(allZeros)
-        {
-            return -1;
-        }
-    }
-    if(b.vec[b.vec.size()-1] == 0)
-    {
-        int size = b.vec.size() - 1;
-        bool allZeros = true;
-        for(int i = size; i >= 0; i++)
-        {
-            if(b.vec[i] != 0)
-            {
-                allZeros = false;
-                break;
-            }
-        }
-        if(allZeros)
-        {
-            return 1;
-        }
-    }*/
-
     if(!b.isPositive && isPositive)
     {
         return 1;
@@ -835,7 +798,7 @@ const BigInt & BigInt::operator /= (const BigInt &b){
         throw DivByZeroException();
     }
     /************* You complete *************/
-    BigInt quotient, remainder;
+    BigInt quotient(base), remainder(base);
     divisionMain(b, quotient, remainder);
     *this = quotient;
     return *this;
@@ -852,8 +815,9 @@ const BigInt & BigInt::operator /= (const BigInt &b){
 */
 BigInt operator % (const  BigInt &a, const BigInt & b){
     /************* You complete *************/
-
-    return a;//for now
+    BigInt temp = a;
+    temp %= b;
+    return temp;
 }
 
 /*
@@ -872,12 +836,9 @@ const BigInt & BigInt::operator %= (const BigInt &b){
         throw DivByZeroException();//divide by zero.
     }
     /************* You complete *************/
-
-
-  
-  
-  
-  
+    BigInt quotient(base), remainder(base);
+    divisionMain(b, quotient, remainder);
+    *this = remainder;
     return *this;
 }
 
@@ -899,12 +860,12 @@ void BigInt::divisionMain(const BigInt &b, BigInt &quotient, BigInt &remainder){
         quotient.vec.push_back(0);
         remainder.vec.push_back(0);
     }
-    else if(*this == b)
+    else if(dividend == divisor)
     {
         quotient.vec.push_back(1);
         remainder.vec.push_back(0);
     }
-    else if(b == one)
+    else if(divisor == one)
     {
         quotient = dividend;
         remainder.vec.push_back(0);
@@ -913,16 +874,16 @@ void BigInt::divisionMain(const BigInt &b, BigInt &quotient, BigInt &remainder){
     {
         // pos starts counting from rightmost
         // div_seq starts from leftmost
-        int position = dividend.vec.size() - 1;
+        int position = dividend.vec.size() - 1, dividendSize = dividend.vec.size();
         // seq = sequence
         BigInt dividend_seq(base);
         dividend_seq.vec.push_back(dividend.vec[position]);
 
-        while(position < dividend.vec.size())
+        while(position < dividendSize)
         {
             while(dividend_seq < divisor && position >= 0)
             {
-                if(position != dividend.vec.size() - 1)
+                if(position != dividendSize)
                 {
                     quotient.vec.insert(quotient.vec.begin() + 0, 0);
                 }
@@ -932,6 +893,11 @@ void BigInt::divisionMain(const BigInt &b, BigInt &quotient, BigInt &remainder){
                     break;
                 }
                 dividend_seq.vec.insert(dividend_seq.vec.begin() + 0, dividend.vec[position]);
+                // if dividend_seq vector size is greater than divisor, but it contains all zeros pop one zero so comparison operators work
+                if((dividend_seq.vec.size() >= divisor.vec.size()) && (dividend_seq.vec[dividend_seq.vec.size()-1] == 0))
+                {
+                    dividend_seq.vec.erase(dividend_seq.vec.begin() + (dividend_seq.vec.size() - 1));
+                }
             }
             if(position < 0)
             {
@@ -948,14 +914,25 @@ void BigInt::divisionMain(const BigInt &b, BigInt &quotient, BigInt &remainder){
             {
                 dividend_seq.vec.clear();
             }
-            if(position < dividend.vec.size())
+            if(position < dividendSize && position != 0)
             {
                 dividend_seq.vec.insert(dividend_seq.vec.begin() + 0, dividend.vec[position-1]);
             }
             position--;
         }
+        if(dividend_seq.vec.empty())
+        {
+            dividend_seq.vec.push_back(0);
+        }
         remainder = dividend_seq;
-        remainder.isPositive = dividend.isPositive;
+        if(remainder == zero)
+        {
+            remainder.isPositive = true;
+        }
+        else
+        {
+            remainder.isPositive = isPositive;
+        }
     }
     if((remainder != zero) && (remainder.vec.size() > 0))
     {
