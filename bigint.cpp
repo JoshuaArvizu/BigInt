@@ -956,15 +956,10 @@ void BigInt::divisionMain(const BigInt &b, BigInt &quotient, BigInt &remainder){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt pow(const  BigInt &a, const BigInt & b){
-
     /************* You complete *************/
-  
-  
-  
-  
-  
-  
-    return a;//for now
+    BigInt temp = a;
+    temp.exponentiation(b);
+    return temp;
 }
 
 /*
@@ -984,12 +979,42 @@ const BigInt & BigInt::exponentiation(const BigInt &b){
         throw ExpByNegativeException();
     }
     /************* You complete *************/
+    BigInt x = *this, n = b, one("1", base), zero(0, base), two(2, base);
 
+    if(n == one)
+    {
+        return *this;
+    }
+    else if(x == one)
+    {
+        one.isPositive = isPositive;
+        return *this = one;
+    }
+    else if(n == zero)
+    {
+        x.vec.clear();
+        x.vec.push_back(1);
+        x.isPositive = true;
+        return *this = x;
+    }
+    else
+    {
+        while(n != zero)
+        {
+            if(n % two == zero)
+            {
+                x *= x;
+                n /= two;
+            }
+            else
+            {
+                x *= x;
+                n = (n-one) / two;
+            }
+        }
+    }
 
-  
-  
-  
-    return *this;
+    return *this = x;
 }
 
 /*
