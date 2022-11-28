@@ -979,41 +979,38 @@ const BigInt & BigInt::exponentiation(const BigInt &b){
         throw ExpByNegativeException();
     }
     /************* You complete *************/
-    BigInt x = *this, n = b, one("1", base), zero(0, base), two(2, base);
+    BigInt x = *this, n = b, one("1", base), extra = one, zero(0, base), two(2, base);
+    bool odd = false;
 
-    if(n == one)
+    if(n == zero)
     {
-        return *this;
-    }
-    else if(x == one)
-    {
-        one.isPositive = isPositive;
         return *this = one;
     }
-    else if(n == zero)
+    // since some numbers are positive when they should be negative it probably is getting multiplied enough times
+    while(n > one)
     {
-        x.vec.clear();
-        x.vec.push_back(1);
-        x.isPositive = true;
-        return *this = x;
-    }
-    else
-    {
-        while(n != zero)
+        if(n % two == zero)
         {
-            if(n % two == zero)
-            {
-                x *= x;
-                n /= two;
-            }
-            else
-            {
-                x *= x;
-                n = (n-one) / two;
-            }
+            n /= two;
+            x *= x;
+        }
+        else
+        {
+            n = (n-one) / two;
+            extra *= x;
+            x *= x;
+            odd = true;
+
+        }
+        if(n.vec[n.vec.size()-1] == 0 && n.vec.size() > one.vec.size())
+        {
+            n.vec.erase(n.vec.begin() + (n.vec.size() - 1));
         }
     }
-
+    if(odd)
+    {
+        x *= extra;
+    }
     return *this = x;
 }
 
