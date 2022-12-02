@@ -237,7 +237,7 @@ string BigInt::to_string(){
 int BigInt::to_int() const{
     /************* You complete *************/
     int bigInt = 0, size = vec.size();
-    // it not long long will never get INT_MAX to compare properly
+    // if   not long long will never get INT_MAX to compare properly
     long long result = 0;
 
     for(int i = 0; i < size; i++)
@@ -1024,14 +1024,10 @@ const BigInt & BigInt::exponentiation(const BigInt &b){
 // Note: Should take you exactly 3 lines of code
 */
 BigInt modPow(const BigInt &a, const BigInt &b, const BigInt &m){
-
     /************* You complete *************/
-  
-  
-
-  
-  
-    return a;//for now
+    BigInt temp = a;
+    temp.modulusExp(b, m);
+    return temp;
 }
 
 
@@ -1054,11 +1050,37 @@ const BigInt & BigInt::modulusExp(const BigInt &b, const BigInt &m){
         throw ExpByNegativeException();
     }
     /************* You complete *************/
-
-
-  
-  
-    return *this;
+    BigInt x = *this, n = b, c = m, one(1, base), extra = one, zero(0, base), two(2, base);
+    bool odd;
+    if(n == zero)
+    {
+        return *this = one;
+    }
+    while(n > one)
+    {
+        if(n % two == zero)
+        {
+            n /= two;
+            x = ((x*x)%c);
+        }
+        else
+        {
+            n = (n-one) / two;
+            extra *= x;
+            x = ((x*x)%c);
+            odd = true;
+        }
+        if(n.vec[n.vec.size()-1] == 0 && n.vec.size() > one.vec.size())
+        {
+            n.vec.erase(n.vec.begin() + (n.vec.size() - 1));
+        }
+    }
+    if(odd)
+    {
+        x *= extra;
+    }
+    x %= c;
+    return *this = x;
 }
 
 //******************************************************************
